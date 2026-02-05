@@ -42,7 +42,8 @@ function AddEmployee() {
       navigate("/candidates");
     } catch (error) {
       console.error("Error adding candidate:", error);
-      alert(`Failed to add candidate: ${error.response?.data?.message || error.message}`);
+      const errorMessage = error.response?.data?.message || error.message || "Failed to add candidate. Please try again.";
+      alert(`Error adding candidate: ${errorMessage}`);
     }
   };
 

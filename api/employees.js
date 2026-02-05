@@ -48,7 +48,7 @@ export default async function handler(req, res) {
                 if (id && id !== "employees") {
                     const employee = await Employee.findById(id);
                     if (!employee) {
-                        return res.status(404).json({ error: "Employee not found" });
+                        return res.status(404).json({ message: "Employee not found" });
                     }
                     return res.status(200).json(employee);
                 } else {
@@ -57,6 +57,14 @@ export default async function handler(req, res) {
                 }
 
             case "POST":
+                // Check for duplicate email
+                const existing = await Employee.findOne({ email: req.body.email });
+                if (existing) {
+                    return res.status(400).json({
+                        message: "A candidate with this email address already exists.",
+                        code: "DUPLICATE_EMAIL"
+                    });
+                }
                 const newEmployee = await Employee.create(req.body);
                 return res.status(201).json(newEmployee);
 

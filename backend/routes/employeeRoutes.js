@@ -6,10 +6,25 @@ import Employee from "../models/Employee.js";
 const router = express.Router();
 
 // ➕ Add Employee
-router.post("/", upload.single("photo"), async (req, res) => {
+router.post("/", (req, res, next) => {
+  // Check if request is JSON
+  if (req.is('json')) {
+    next(); // Skip upload middleware and go to handler
+  } else {
+    upload.single("photo")(req, res, next);
+  }
+}, async (req, res) => {
   try {
-    console.log("Received data:", req.body); // Debug log
-    console.log("Received file:", req.file); // Debug log
+    console.log("Received data:", req.body);
+
+    // Check for duplicate email before saving
+    const existing = await Employee.findOne({ email: req.body.email });
+    if (existing) {
+      return res.status(400).json({
+        message: "A candidate with this email address already exists.",
+        code: "DUPLICATE_EMAIL"
+      });
+    }
 
     const employeeData = {
       name: req.body.name,
@@ -17,7 +32,6 @@ router.post("/", upload.single("photo"), async (req, res) => {
       department: req.body.department,
     };
 
-    // Add optional fields only if they exist
     if (req.body.phone) employeeData.phone = req.body.phone;
     if (req.body.rating) employeeData.rating = parseFloat(req.body.rating);
     if (req.body.aiScore) employeeData.aiScore = parseInt(req.body.aiScore);
@@ -27,11 +41,17 @@ router.post("/", upload.single("photo"), async (req, res) => {
 
     const employee = new Employee(employeeData);
     await employee.save();
-    
+
     res.status(201).json(employee);
   } catch (err) {
     console.error("Error creating employee:", err);
-    res.status(500).json({ error: err.message, details: err.stack });
+    if (err.name === 'ValidationError') {
+      return res.status(400).json({ message: err.message });
+    }
+    res.status(500).json({
+      message: "An internal server error occurred while adding the candidate.",
+      error: err.message
+    });
   }
 });
 
@@ -94,7 +114,7 @@ router.put("/:id", upload.single("photo"), async (req, res) => {
 router.delete("/:id", async (req, res) => {
   try {
     const employee = await Employee.findByIdAndDelete(req.params.id);
-    
+
     if (!employee) {
       return res.status(404).json({ message: "Employee not found" });
     }
