@@ -24,6 +24,9 @@ const connectDB = async () => {
 
 // Serverless function handler
 export default async function handler(req, res) {
+    console.log(`📡 Incoming ${req.method} request to ${req.url}`);
+    if (req.body) console.log(`📦 Request body:`, JSON.stringify(req.body).substring(0, 100));
+
     // Enable CORS
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
