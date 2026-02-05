@@ -7,9 +7,17 @@
             "config": {
                 "distDir": "dist"
             }
+        },
+        {
+            "src": "api/**/*.js",
+            "use": "@vercel/node"
         }
     ],
     "routes": [
+        {
+            "src": "/api/(.*)",
+            "dest": "/api/$1"
+        },
         {
             "src": "/(.*)",
             "dest": "/frontend/$1"
@@ -17,5 +25,5 @@
     ],
     "buildCommand": "cd frontend && npm install && npm run build",
     "outputDirectory": "frontend/dist",
-    "installCommand": "cd frontend && npm install"
+    "installCommand": "npm install --prefix backend && cd frontend && npm install"
 }

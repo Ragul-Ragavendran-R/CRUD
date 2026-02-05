@@ -55,9 +55,9 @@ cd backend
 npm install
 ```
 
-3. Create `.env` file:
+3. Create `.env` file (or copy from `.env.example`):
 ```env
-MONGODB_URI=your_mongodb_connection_string
+MONGO_URI=your_mongodb_connection_string
 PORT=5000
 ```
 
@@ -94,15 +94,55 @@ Frontend will run on `http://localhost:5173`
 
 ## 🌐 Deployment
 
-### Frontend (Vercel)
+### Vercel (Full-Stack Deployment)
 
-1. Push code to GitHub
-2. Import repository to Vercel
-3. Vercel will auto-detect settings from `vercel.json`
-4. Add environment variables in Vercel dashboard:
-   - `VITE_API_URL`: Your backend URL
+This project is configured to deploy both frontend and backend to Vercel using serverless functions.
 
-### Backend (Render/Railway)
+#### Step 1: Set Up MongoDB Atlas
+
+1. Create a free account at [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)
+2. Create a new cluster
+3. Go to **Database Access** → Add a database user with password
+4. Go to **Network Access** → Add IP address `0.0.0.0/0` (allow from anywhere)
+5. Get your connection string from **Connect** → **Connect your application**
+   - Format: `mongodb+srv://<username>:<password>@<cluster>.mongodb.net/<database>`
+
+#### Step 2: Deploy to Vercel
+
+1. Push your code to GitHub:
+```bash
+git add .
+git commit -m "Configure MongoDB for deployment"
+git push
+```
+
+2. Import repository to Vercel:
+   - Go to [Vercel Dashboard](https://vercel.com/dashboard)
+   - Click **Add New** → **Project**
+   - Import your GitHub repository
+
+3. **Add Environment Variables** in Vercel:
+   - Go to **Settings** → **Environment Variables**
+   - Add the following:
+     - **Name**: `MONGO_URI`
+     - **Value**: Your MongoDB Atlas connection string
+     - **Environment**: Production, Preview, Development (select all)
+
+4. Deploy:
+   - Vercel will automatically deploy
+   - Your API will be available at `https://your-app.vercel.app/api/employees`
+   - Your frontend will be at `https://your-app.vercel.app`
+
+#### Step 3: Update Frontend API URL
+
+If needed, update your frontend to use the production API URL in `frontend/.env`:
+```env
+VITE_API_URL=https://your-app.vercel.app
+```
+
+### Alternative: Backend on Render/Railway
+
+If you prefer to deploy backend separately:
 
 #### Option 1: Render
 1. Create new Web Service on Render
@@ -126,14 +166,20 @@ Frontend will run on `http://localhost:5173`
 
 ### Frontend (.env)
 ```env
-VITE_API_URL=your_backend_url
+VITE_API_URL=http://localhost:5000  # For local development
+# VITE_API_URL=https://your-app.vercel.app  # For production
 ```
 
 ### Backend (.env)
 ```env
-MONGODB_URI=your_mongodb_connection_string
+MONGO_URI=mongodb+srv://<username>:<password>@<cluster>.mongodb.net/<database>
 PORT=5000
 ```
+
+**Important**: 
+- Copy `backend/.env.example` to `backend/.env` and fill in your MongoDB connection string
+- Never commit `.env` files to Git (already in `.gitignore`)
+- For Vercel deployment, add `MONGO_URI` in the Vercel dashboard environment variables
 
 ## 📝 API Endpoints
 
