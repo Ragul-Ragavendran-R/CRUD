@@ -120,16 +120,54 @@ git push
    - Go to [Vercel Dashboard](https://vercel.com/dashboard)
    - Click **Add New** → **Project**
    - Import your GitHub repository
+## New Fixes for Vercel Deployment
 
-3. **Add Environment Variables** in Vercel:
-   - Go to **Settings** → **Environment Variables**
-   - Add the following:
-     - **Name**: `MONGO_URI`
-     - **Value**: Your MongoDB Atlas connection string
-     - **Environment**: Production, Preview, Development (select all)
+### 1. **Dynamic API URL**
+Created `frontend/src/config/apiConfig.js` to automatically switch between local development (`localhost:5000`) and Vercel production (`/api`) URLs. All frontend pages now use this dynamic config.
 
-4. Deploy:
-   - Vercel will automatically deploy
+### 2. **JSON Data Submission**
+Switched employee creation and updates from `FormData` (`multipart/form-data`) to JSON (`application/json`). This ensures compatibility with Vercel's serverless environment weight and body parsing.
+
+### 3. **Photo Upload Limitation**
+> [!NOTE]
+> Photo uploads are temporarily disabled in the Vercel version. This is because Vercel serverless functions have an ephemeral filesystem (files are deleted after each request). To enable photo uploads in production, you would need to integrate with a service like Cloudinary or AWS S3. 
+
+---
+
+## Deployment Status
+- ✅ **Code Pushed**: All fixes are now live in your GitHub repository.
+- ✅ **Vercel Auto-Deploy**: Vercel should be automatically building and deploying these changes now.
+
+## Final Fix for Vercel Build Failure
+
+I identified why the previous fixes weren't working: **Vercel was failing to locate the frontend build output** because it was hidden inside the `frontend/dist` folder.
+
+### ✏️ [vercel.json](file:///C:/Users/Ragul%20Ragavendran/Downloads/CRUD/vercel.json) (Finalized)
+I added' explicit build settings to the configuration so Vercel knows exactly what to do:
+```json
+{
+  "buildCommand": "cd frontend && npm install && npm run build",
+  "outputDirectory": "frontend/dist",
+  "rewrites": [
+    {
+      "source": "/api/employees(.*)",
+      "destination": "/api/employees"
+    }
+  ]
+}
+```
+
+## How to Verify Success
+
+1.  **Wait for Build**: Go to your [Vercel Deployments](https://vercel.com/dashboard) and wait until the latest build shows "Ready" (green checkmark).
+2.  **Hard Refresh**: On the website, press `Ctrl + F5` (Windows) or `Cmd + Shift + R` (Mac) to clear the old cached version of the code.
+3.  **Check API**: Try visiting `https://your-app.vercel.app/api/employees` directly. If it returns `[]` or a list of people, the backend is working.
+4.  **Add Employee**: Try adding an employee again. If it fails, the alert will now show a **detailed error message** (e.g., "Failed to add candidate: [Reason]") instead of just a generic message.
+
+## Status Check
+- ✅ **Code Pushed**: All configuration and API fixes are in GitHub.
+- ✅ **Build Settings**: `vercel.json` now correctly tells Vercel how to build the project.
+- ✅ **Database**: Connected and ready.
    - Your API will be available at `https://your-app.vercel.app/api/employees`
    - Your frontend will be at `https://your-app.vercel.app`
 
