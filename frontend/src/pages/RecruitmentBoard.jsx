@@ -17,9 +17,10 @@ export default function RecruitmentBoard() {
   const fetchCandidates = async () => {
     try {
       const response = await axios.get(`${API_URL}/employees`);
-      setCandidates(response.data);
+      setCandidates(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error("Error fetching candidates:", error);
+      setCandidates([]);
     }
   };
 
@@ -47,11 +48,12 @@ export default function RecruitmentBoard() {
     }
   };
 
-  const filteredCandidates = candidates.filter(candidate =>
-    candidate.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    candidate.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    candidate.department?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const searchLower = searchTerm.toLowerCase();
+  const filteredCandidates = Array.isArray(candidates) ? candidates.filter(candidate =>
+    candidate.name?.toLowerCase().includes(searchLower) ||
+    candidate.email?.toLowerCase().includes(searchLower) ||
+    candidate.department?.toLowerCase().includes(searchLower)
+  ) : [];
 
   const groupedCandidates = {
     applied: filteredCandidates.filter(c => c.status === "applied"),
@@ -251,7 +253,7 @@ export default function RecruitmentBoard() {
       </div>
 
       {/* Custom Scrollbar Styles */}
-      <style jsx>{`
+      <style>{`
         .custom-scrollbar::-webkit-scrollbar {
           width: 6px;
         }
