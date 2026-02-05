@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Upload, ArrowLeft, User } from "lucide-react";
+import API_URL from "../config/apiConfig";
 
 function EditEmployee() {
   const { id } = useParams();
@@ -16,7 +17,7 @@ function EditEmployee() {
     aiScore: "",
     skills: "",
     status: "applied",
-    photo: null
+    photo: "" // Changed for JSON
   });
   const [preview, setPreview] = useState(null);
   const [currentPhoto, setCurrentPhoto] = useState(null);
@@ -28,7 +29,7 @@ function EditEmployee() {
 
   const fetchCandidate = async () => {
     try {
-      const response = await axios.get(`http://localhost:5000/api/employees/${id}`);
+      const response = await axios.get(`${API_URL}/employees/${id}`);
       const data = response.data;
       setForm({
         name: data.name || "",
@@ -39,7 +40,7 @@ function EditEmployee() {
         aiScore: data.aiScore || "",
         skills: data.skills || "",
         status: data.status || "applied",
-        photo: null
+        photo: data.photo || ""
       });
       if (data.photo) {
         setCurrentPhoto(data.photo);
@@ -52,34 +53,23 @@ function EditEmployee() {
   };
 
   const handleChange = (e) => {
-    if (e.target.name === "photo") {
-      const file = e.target.files[0];
-      setForm({ ...form, photo: file });
-      if (file) {
-        setPreview(URL.createObjectURL(file));
-      }
-    } else {
-      setForm({ ...form, [e.target.name]: e.target.value });
-    }
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handlePhotoChange = (e) => {
+    alert("Photo update is temporarily disabled in this version. Data will be saved without photo changes.");
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const formData = new FormData();
-
-    Object.keys(form).forEach(key => {
-      if (form[key] !== null && form[key] !== "") {
-        formData.append(key, form[key]);
-      }
-    });
 
     try {
       await axios.put(
-        `http://localhost:5000/api/employees/${id}`,
-        formData,
+        `${API_URL}/employees/${id}`,
+        form,
         {
           headers: {
-            'Content-Type': 'multipart/form-data'
+            'Content-Type': 'application/json'
           }
         }
       );
@@ -87,7 +77,7 @@ function EditEmployee() {
       navigate("/candidates");
     } catch (error) {
       console.error("Error updating candidate:", error);
-      alert("Failed to update candidate");
+      alert(`Failed to update candidate: ${error.response?.data?.message || error.message}`);
     }
   };
 
@@ -125,15 +115,15 @@ function EditEmployee() {
               </label>
               <div className="flex items-center gap-6">
                 {preview ? (
-                  <img 
-                    src={preview} 
-                    alt="Preview" 
+                  <img
+                    src={preview}
+                    alt="Preview"
                     className="w-24 h-24 rounded-full object-cover border-4 border-gray-100 shadow-sm"
                   />
                 ) : currentPhoto ? (
-                  <img 
-                    src={`http://localhost:5000/uploads/${currentPhoto}`} 
-                    alt="Current" 
+                  <img
+                    src={currentPhoto.startsWith('http') ? currentPhoto : `${API_URL}/../../uploads/${currentPhoto}`}
+                    alt="Current"
                     className="w-24 h-24 rounded-full object-cover border-4 border-gray-100 shadow-sm"
                   />
                 ) : (
@@ -147,7 +137,7 @@ function EditEmployee() {
                   <input
                     type="file"
                     name="photo"
-                    onChange={handleChange}
+                    onChange={handlePhotoChange}
                     accept="image/*"
                     className="hidden"
                   />

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Search, Filter, MoreVertical, Star, Mail, Phone, Calendar, Edit, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import API_URL from "../config/apiConfig";
 
 export default function RecruitmentBoard() {
   const navigate = useNavigate();
@@ -15,7 +16,7 @@ export default function RecruitmentBoard() {
 
   const fetchCandidates = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/api/employees");
+      const response = await axios.get(`${API_URL}/employees`);
       setCandidates(response.data);
     } catch (error) {
       console.error("Error fetching candidates:", error);
@@ -25,7 +26,7 @@ export default function RecruitmentBoard() {
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this candidate?")) {
       try {
-        await axios.delete(`http://localhost:5000/api/employees/${id}`);
+        await axios.delete(`${API_URL}/employees/${id}`);
         fetchCandidates();
       } catch (error) {
         console.error("Error deleting candidate:", error);
@@ -39,7 +40,7 @@ export default function RecruitmentBoard() {
 
   const handleStatusChange = async (id, newStatus) => {
     try {
-      await axios.put(`http://localhost:5000/api/employees/${id}`, { status: newStatus });
+      await axios.put(`${API_URL}/employees/${id}`, { status: newStatus });
       fetchCandidates();
     } catch (error) {
       console.error("Error updating status:", error);
@@ -59,7 +60,7 @@ export default function RecruitmentBoard() {
   };
 
   const CandidateCard = ({ candidate }) => (
-    <div 
+    <div
       className="bg-white rounded-xl p-4 mb-3 shadow-sm hover:shadow-md transition-all duration-200 relative"
       onMouseEnter={() => setHoveredCard(candidate._id)}
       onMouseLeave={() => setHoveredCard(null)}
@@ -74,7 +75,7 @@ export default function RecruitmentBoard() {
           <button className="text-gray-400 hover:text-gray-600 p-1">
             <MoreVertical size={16} />
           </button>
-          
+
           {/* Dropdown Menu */}
           {hoveredCard === candidate._id && (
             <div className="absolute right-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
@@ -213,12 +214,12 @@ export default function RecruitmentBoard() {
             className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
           />
         </div>
-        
+
         <button className="flex items-center gap-2 px-4 py-2.5 bg-white rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors text-sm font-medium text-gray-700">
           <Filter size={16} />
           <span>Filter</span>
         </button>
-        
+
         <button
           onClick={() => navigate("/candidates/add")}
           className="px-5 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-semibold shadow-sm"

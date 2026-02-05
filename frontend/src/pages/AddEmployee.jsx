@@ -2,6 +2,7 @@ import axios from "axios";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Upload, ArrowLeft, User } from "lucide-react";
+import API_URL from "../config/apiConfig";
 
 function AddEmployee() {
   const navigate = useNavigate();
@@ -14,43 +15,34 @@ function AddEmployee() {
     aiScore: "",
     skills: "",
     status: "applied",
-    photo: null
+    photo: "" // Changed to empty string for JSON
   });
   const [preview, setPreview] = useState(null);
 
   const handleChange = (e) => {
-    if (e.target.name === "photo") {
-      const file = e.target.files[0];
-      setForm({ ...form, photo: file });
-      if (file) {
-        setPreview(URL.createObjectURL(file));
-      }
-    } else {
-      setForm({ ...form, [e.target.name]: e.target.value });
-    }
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handlePhotoChange = (e) => {
+    // Note: Photo upload disabled for Vercel serverless compatibility until external storage is set up
+    alert("Photo upload is temporarily disabled in this version. Data will be saved without photo.");
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const formData = new FormData();
-    Object.keys(form).forEach(key => {
-      if (form[key] !== null && form[key] !== "") {
-        formData.append(key, form[key]);
-      }
-    });
-
     try {
-      await axios.post("http://localhost:5000/api/employees", formData, {
+      // Sending as JSON instead of FormData for better serverless function support
+      await axios.post(`${API_URL}/employees`, form, {
         headers: {
-          'Content-Type': 'multipart/form-data'
+          'Content-Type': 'application/json'
         }
       });
       alert("Candidate Added Successfully!");
       navigate("/candidates");
     } catch (error) {
       console.error("Error adding candidate:", error);
-      alert("Failed to add candidate");
+      alert(`Failed to add candidate: ${error.response?.data?.message || error.message}`);
     }
   };
 
@@ -80,9 +72,9 @@ function AddEmployee() {
               </label>
               <div className="flex items-center gap-6">
                 {preview ? (
-                  <img 
-                    src={preview} 
-                    alt="Preview" 
+                  <img
+                    src={preview}
+                    alt="Preview"
                     className="w-24 h-24 rounded-full object-cover border-4 border-gray-100 shadow-sm"
                   />
                 ) : (
@@ -96,7 +88,7 @@ function AddEmployee() {
                   <input
                     type="file"
                     name="photo"
-                    onChange={handleChange}
+                    onChange={handlePhotoChange}
                     accept="image/*"
                     className="hidden"
                   />

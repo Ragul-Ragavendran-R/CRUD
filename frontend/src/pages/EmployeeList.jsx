@@ -1,12 +1,12 @@
-// EmployeeList.jsx
 import axios from "axios";
 import { useEffect, useState } from "react";
+import API_URL from "../config/apiConfig";
 
 function EmployeeList() {
   const [employees, setEmployees] = useState([]);
 
   useEffect(() => {
-    axios.get("http://localhost:5000/api/employees")
+    axios.get(`${API_URL}/employees`)
       .then(res => setEmployees(res.data));
   }, []);
 
@@ -15,7 +15,7 @@ function EmployeeList() {
       {employees.map(emp => (
         <div key={emp._id}>
           <img
-            src={`http://localhost:5000/uploads/${emp.photo}`}
+            src={emp.photo?.startsWith('http') ? emp.photo : `${API_URL}/../../uploads/${emp.photo}`}
             width="100"
           />
           <h3>{emp.name}</h3>
