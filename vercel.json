@@ -5,6 +5,10 @@
         {
             "source": "/api/employees(.*)",
             "destination": "/api/employees"
+        },
+        {
+            "source": "/((?!api/).*)",
+            "destination": "/index.html"
         }
     ]
 }
